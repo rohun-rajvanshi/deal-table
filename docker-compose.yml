@@ -1,0 +1,23 @@
+# Run the app and a PostgreSQL database locally:  docker compose up
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dealadmin
+      POSTGRES_PASSWORD: dealpass
+      POSTGRES_DB: dealtable
+    volumes:
+      - dealdata:/var/lib/postgresql/data
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://dealadmin:dealpass@db:5432/dealtable
+      PGSSL: disable
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+volumes:
+  dealdata:

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e3b2c">
+<title>Monopoly Deal Table</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="table.css?v=30">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo" aria-hidden="true">D</span><span><b>Deal Table</b><small id="modeLbl">LOCAL TABLE</small></span></div>
+  <nav class="top-actions">
+    <button id="chatBtn" class="tbtn chat-btn" hidden aria-label="Room chat">💬 Chat<span id="chatBadge" class="chat-badge" hidden>0</span></button>
+    <button id="rulesBtn" class="tbtn">Rules</button>
+    <button id="restartBtn" class="tbtn" hidden>↻ Restart</button>
+    <button id="newGameBtn" class="tbtn leave" hidden>🚪 Leave game</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ SETUP ============ -->
+  <section id="setup" class="setup">
+    <div class="hero">
+      <div class="hero-cards" aria-hidden="true">
+        <span class="hc1"></span><span class="hc2"></span><span class="hc3"></span>
+      </div>
+      <h1>Pull up a chair.<br><em>Make a deal.</em></h1>
+      <p>A friendly digital table for Monopoly Deal — official card mix, real Just Say No chains, and steals you aim by tapping the table.</p>
+      <ul class="facts"><li><b>2–5</b> players</li><li><b>3</b> plays a turn</li><li><b>3</b> full sets wins</li></ul>
+    </div>
+
+    <div class="panel">
+      <div id="rejoin" class="rejoin" hidden><div><b>You have a game in progress</b><small id="rejoinTxt"></small></div><div class="rejoin-btns"><button id="rejoinBtn" class="cta sm">Rejoin</button><button id="forgetBtn" class="tbtn">Leave</button></div></div>
+      <div class="tabs" role="tablist">
+        <button class="tab on" data-tab="local" role="tab">Same device</button>
+        <button class="tab" data-tab="online" role="tab">Online room</button>
+      </div>
+
+      <div id="tabLocal" class="tabbody">
+        <label class="lbl">Players</label>
+        <div class="counts">
+          <button class="count-btn on" data-count="2">2</button><button class="count-btn" data-count="3">3</button><button class="count-btn" data-count="4">4</button><button class="count-btn" data-count="5">5</button>
+        </div>
+        <div id="nameFields" class="names"></div>
+        <button id="startBtn" class="cta">Deal the cards</button>
+        <p class="hint">Pass the device between turns — hands stay hidden behind a curtain.</p>
+      </div>
+
+      <div id="tabOnline" class="tabbody" hidden>
+        <label class="lbl" for="roomName">Your name</label>
+        <input id="roomName" class="field" maxlength="18" placeholder="Your name" autocomplete="nickname">
+        <div class="room-row">
+          <button id="createRoomBtn" class="cta sm">Create room</button>
+          <span class="or">or</span>
+          <input id="roomCodeIn" class="field code" maxlength="6" placeholder="CODE" autocomplete="off" aria-label="Room code">
+          <button id="joinRoomBtn" class="tbtn solid">Join</button>
+        </div>
+        <div id="lobby" class="lobby" hidden>
+          <div class="lobby-code"><div><small>Room code</small><b id="roomCode">------</b></div><button id="copyCodeBtn" class="tbtn solid">Copy</button></div>
+          <p id="lobbyStatus" class="hint"></p>
+          <ul id="lobbyPlayers" class="lobby-list"></ul>
+          <div class="room-row"><button id="startRoomBtn" class="cta sm" hidden>Start game</button><button id="leaveRoomBtn" class="tbtn">Leave</button></div>
+        </div>
+        <p id="roomMsg" class="hint" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GAME ============ -->
+  <section id="game" class="game" hidden>
+    <div id="opponents" class="opponents"></div>
+
+    <div class="centre">
+      <div class="piles">
+        <div class="pile deck" title="Draw pile"><div class="card back"><span>DEAL</span></div><b id="deckCount">0</b></div>
+        <div class="pile discard" title="Discard pile"><div id="discardTop"></div></div>
+      </div>
+      <div class="turnbox">
+        <div class="turn-who"><span class="dot"></span><div><b id="turnName">—</b><small id="turnSub"></small></div></div>
+        <div class="turn-meta"><span class="pips" id="pips"></span><small id="playsLbl"></small><span id="timer" class="timer" title="Turn timer (a reminder only)">4:00</span></div>
+        <button id="endTurnBtn" class="end-btn">End turn</button>
+      </div>
+      <div class="log"><div class="log-head"><span>Table log</span><button id="logToggle" class="link">More</button></div><ul id="logList"></ul></div>
+    </div>
+
+    <div id="mine" class="mine"></div>
+
+    <div class="dock" id="dock">
+      <div id="prompt" class="prompt"></div>
+      <div class="hand-wrap"><div class="hand-lbl" id="handLbl">Your hand</div><div id="hand" class="hand"></div></div>
+    </div>
+  </section>
+</main>
+
+<aside id="chatPanel" class="chat-panel" aria-label="Room chat" aria-hidden="true">
+  <header class="chat-head"><div><b>Room chat</b><small>Only players in this room can see it</small></div><button id="chatClose" class="x" aria-label="Close chat">×</button></header>
+  <ul id="chatList" class="chat-list"></ul>
+  <div id="chatQuick" class="chat-quick"></div>
+  <form id="chatForm" class="chat-form" autocomplete="off"><input id="chatInput" maxlength="240" placeholder="Say something…" aria-label="Message"><button type="submit">Send</button></form>
+</aside>
+<div id="chatPeek" class="chat-peek" role="status" aria-live="polite"></div>
+<div id="curtain" class="curtain" hidden></div>
+<div id="modal" class="modal" hidden></div>
+<div id="flash" class="flash" aria-live="polite"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="config.js?v=30"></script>
+<script src="app.js?v=30"></script>
+</body>
+</html>
