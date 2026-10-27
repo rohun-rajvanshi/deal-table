@@ -21,7 +21,7 @@ button:disabled{cursor:not-allowed}
 [hidden]{display:none!important}
 
 /* ---------- top bar ---------- */
-.topbar{position:sticky;top:0;z-index:42;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px clamp(12px,3vw,28px);
+.topbar{position:sticky;top:0;z-index:42;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(10px,env(safe-area-inset-top)) max(clamp(12px,3vw,28px),env(safe-area-inset-right)) 10px max(clamp(12px,3vw,28px),env(safe-area-inset-left));
   background:linear-gradient(180deg,rgba(8,34,25,.92),rgba(8,34,25,.7));backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;color:var(--cream);text-decoration:none;cursor:default;user-select:none}
 .brand b{font:800 18px/1 var(--display);letter-spacing:-.2px;display:block}
@@ -373,4 +373,13 @@ body.targeting .stack.elig .tc .card,body.targeting .stack.picked .tc .card{filt
 .card.wild .band:not(.placed) span{font-size:.74em;line-height:1.05;padding-left:18%}
 @media (max-width:520px){#chatBtn,#restartBtn,#newGameBtn{font-size:0;padding:8px 11px}#chatBtn:before{content:"💬";font-size:15px}#restartBtn:before{content:"↻";font-size:16px;font-weight:800}#newGameBtn:before{content:"🚪";font-size:15px}#chatBtn .chat-badge{font-size:11px}}
 @media (max-width:420px){.tbtn{padding:7px 10px;font-size:13px}.top-actions{gap:6px}.brand{gap:8px}.brand b{font-size:16px}.logo{width:30px;height:30px;font-size:17px}}
+/* ---------- installed app ---------- */
+.tbtn.install{background:var(--gold);color:var(--ink);border-color:transparent}
+.tbtn.install:hover{background:var(--gold-2)}
+.steps{margin:6px 0 12px;padding-left:20px;line-height:1.7}
+.kbd{display:inline-block;padding:0 6px;border-radius:6px;background:#efe9da;font-weight:700}
+html.is-app body{overscroll-behavior-y:none;-webkit-user-select:none;user-select:none}
+html.is-app input{-webkit-user-select:text;user-select:text}
+button,.tc,.stack,.seat{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media (max-width:520px){#installBtn{font-size:0;padding:8px 11px}#installBtn:before{content:"📲";font-size:15px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

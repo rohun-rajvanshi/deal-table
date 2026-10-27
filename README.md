@@ -18,6 +18,7 @@ A friendly digital table for **Monopoly Deal**. Play on one device by passing it
 - **Room chat** with quick reactions, an unread badge and message previews.
 - **Restart and Leave**: the host can deal a fresh game for the same room. Anyone can leave, and you can rejoin after a refresh.
 - **Works on phones**, with a bottom action bar and a fanned hand.
+- **Installable app**: add it to your home screen on Android, iPhone or desktop. It opens full screen and same-device games work offline. See [docs/install-app.md](docs/install-app.md).
 
 | Just Say No response | Online room chat (phone) |
 | --- | --- |
@@ -45,6 +46,7 @@ You can also run the whole thing yourself, site and API together, with Node.js a
 | Guide | What's in it |
 | --- | --- |
 | [How to play](docs/how-to-play.md) | Rules, cards and on-screen controls |
+| [Install as an app](docs/install-app.md) | Android, iPhone and desktop install, offline play, Play Store packaging |
 | [Deploy to GitHub Pages](docs/deploy-github-pages.md) | Publish this repo as a website |
 | [Self-host (Azure, Docker, any Node host)](docs/self-hosting.md) | Run the site and API on your own server |
 | [Architecture](docs/architecture.md) | How the code, game state and online sync work |
@@ -68,7 +70,7 @@ npm start                # http://localhost:3000
 
 ```
 index.html         Forwards GitHub Pages visitors to public/
-public/            The game (index.html, app.js, table.css, config.js)
+public/            The game (index.html, app.js, table.css, config.js) and app files (manifest, sw.js, icons)
 api/rooms.js       Online rooms: create, join, start, save moves, leave
 api/chat.js        Room chat
 lib/db.js          PostgreSQL connection

@@ -876,7 +876,9 @@ function myOnlineId() { if (!game || !room) return null; const p = game.players.
 function roomMsg(m, err) { $("roomMsg").textContent = m || ""; $("roomMsg").classList.toggle("err", !!err); }
 async function roomCall(body, method = "POST") {
   const url = API + "/api/rooms" + (method === "GET" ? "?code=" + encodeURIComponent(body.code) + "&token=" + encodeURIComponent(body.token || "") : "");
-  const r = await fetch(url, { method, headers: method === "GET" ? {} : { "Content-Type": "text/plain;charset=UTF-8" }, body: method === "GET" ? undefined : JSON.stringify(body) });
+  let r;
+  try { r = await fetch(url, { method, headers: method === "GET" ? {} : { "Content-Type": "text/plain;charset=UTF-8" }, body: method === "GET" ? undefined : JSON.stringify(body) }); }
+  catch (e) { throw new Error(navigator.onLine === false ? "You're offline. Online rooms need an internet connection; same-device games still work." : "Couldn't reach the room service. Check your connection and try again."); }
   const data = await r.json().catch(() => ({ error: "The room service returned an unreadable response." }));
   if (!r.ok) { const err = new Error(data.error || "Room request failed."); err.data = data; err.status = r.status; throw err; }
   return data;
@@ -1012,5 +1014,24 @@ $("chatQuick").innerHTML = QUICK.map((q) => '<button type="button" data-q="' + e
 $("chatQuick").addEventListener("click", (e) => { const b = e.target.closest("[data-q]"); if (b) sendChat(b.dataset.q); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && chat.open) setChatOpen(false); });
 
+/* ---------------- install as an app (PWA) ---------------- */
+const standalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let installPrompt = null;
+function showInstall(v) { $("installBtn").hidden = !v || standalone(); }
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; showInstall(true); });
+window.addEventListener("appinstalled", () => { installPrompt = null; showInstall(false); toast("Deal Table is installed — find it on your home screen."); });
+if (isIOS() && !standalone()) showInstall(true); // iPhone/iPad: Safari has no install prompt, so show instructions instead
+$("installBtn").addEventListener("click", async () => {
+  if (installPrompt) { installPrompt.prompt(); const r = await installPrompt.userChoice.catch(() => null); installPrompt = null; if (r && r.outcome === "accepted") showInstall(false); return; }
+  if (isIOS()) return openModal("Install on iPhone / iPad", '<ol class="steps"><li>Open this page in <b>Safari</b>.</li><li>Tap the <b>Share</b> button <span class="kbd">⬆︎</span> at the bottom (or top on iPad).</li><li>Scroll and tap <b>Add to Home Screen</b>, then <b>Add</b>.</li></ol><p>Deal Table then opens full-screen from its own icon, and same-device games work offline.</p>');
+  openModal("Install the app", '<p>In Chrome or Edge, open the browser menu <span class="kbd">⋮</span> and choose <b>Install app</b> or <b>Add to Home screen</b>.</p>');
+});
+if (standalone()) document.documentElement.classList.add("is-app");
+if ("serviceWorker" in navigator && window.isSecureContext) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+
 renderNameFields();
+window.__deal = { get game() { return game; }, ui, COLORS, rentFor, stacksFor, payable, inFullSet, render, commit }; // debugging hook
 })();
