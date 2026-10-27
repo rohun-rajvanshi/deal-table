@@ -2,7 +2,7 @@
 
 A friendly digital table for **Monopoly Deal**. Play on one device by passing it around, or online with friends in a private room. It follows the official card mix and rules, with real Just Say No chains and steals you aim by tapping the table.
 
-**▶ Play:** https://rohun-rajvanshi.github.io/deal-table/
+**▶ Play:** https://deal-table.azurewebsites.net (Azure) · https://monopoly-deal-table.hatchable.site (Hatchable)
 
 ![The table during a Sly Deal: the stealable card glows on the opponent's side](docs/images/sly-deal.jpg)
 
@@ -29,6 +29,10 @@ A friendly digital table for **Monopoly Deal**. Play on one device by passing it
 New to Monopoly Deal? Read **[docs/how-to-play.md](docs/how-to-play.md)**. It covers the rules as this table implements them and how to do each move on screen.
 
 ## How it's hosted
+
+**Azure** runs everything on one free App Service (F1): the game, the online rooms API and a built-in database. Push to GitHub, then run `az webapp deployment source sync -g deal-table-rg -n deal-table` in Azure Cloud Shell to update it. See [self-hosting.md](docs/self-hosting.md#azure-free).
+
+**GitHub Pages** can also serve the game, using the Hatchable server for online rooms:
 
 ```
 GitHub Pages  ──────────────►  Hatchable server
