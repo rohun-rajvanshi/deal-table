@@ -428,6 +428,23 @@ function render() {
   renderTimer();
   syncDock();
   autoScroll();
+  maybeAutoEnd();
+}
+/* After the 3rd play resolves, pass the turn on automatically (a moment later, so the last play is visible). */
+let autoEndKey = null, autoEndT = null;
+function autoEndReady() {
+  return !!game && !game.winner && !game.pending && game.plays <= 0 && myTurnFree() &&
+    !(ui.mode && ui.mode.kind === "discard") && (isOnline() ? myOnlineId() === cur().id : true);
+}
+function maybeAutoEnd() {
+  if (!autoEndReady()) return;
+  const key = game.id + ":" + game.turnNo;
+  if (autoEndKey === key) return;
+  autoEndKey = key;
+  const next = game.players[(game.current + 1) % game.players.length];
+  toast(cur().hand.length > 7 ? "3 plays used. Discard down to 7 to end your turn." : "3 plays used. Passing to " + next.name + "…");
+  clearTimeout(autoEndT);
+  autoEndT = setTimeout(() => { if (autoEndReady() && game.id + ":" + game.turnNo === key) tryEndTurn(); }, 1300);
 }
 function syncDock() { const d = $("dock"); if (d) document.documentElement.style.setProperty("--dock-h", d.offsetHeight + "px"); }
 window.addEventListener("resize", syncDock);
@@ -526,7 +543,7 @@ function renderPrompt(me) {
   } else if (ui.selected) {
     html = cardOptions(me); tone = "pick";
   } else {
-    html = '<div class="pt"><b>Your move · ' + game.plays + " play" + (game.plays === 1 ? "" : "s") + " left</b><span>" + (game.plays ? "Tap a card in your hand. Wild cards on your table can be flipped any time (free)." : "You've used your 3 plays — flip wilds if you like, then end your turn.") + "</span></div>" + btn("end", "End turn →", game.plays ? "ghost" : "primary");
+    html = '<div class="pt"><b>Your move · ' + game.plays + " play" + (game.plays === 1 ? "" : "s") + " left</b><span>" + (game.plays ? "Tap a card in your hand. Wild cards on your table can be flipped any time (free)." : "You've used your 3 plays. Your turn ends automatically.") + "</span></div>" + btn("end", "End turn →", game.plays ? "ghost" : "primary");
   }
   el.className = "prompt " + tone; el.innerHTML = html;
 }
@@ -819,7 +836,7 @@ function closeModal() { $("modal").hidden = true; $("modal").innerHTML = ""; }
 function showRules() {
   openModal("How to play", `
   <p class="lead">Be the first to collect <b>3 complete property sets of different colours</b>.</p>
-  <h3>Your turn</h3><ol><li>Draw 2 cards (5 if your hand is empty).</li><li>Play up to <b>3 cards</b>: bank money/actions, lay properties, or play actions.</li><li>End your turn with 7 cards or fewer.</li></ol>
+  <h3>Your turn</h3><ol><li>Draw 2 cards (5 if your hand is empty).</li><li>Play up to <b>3 cards</b>: bank money/actions, lay properties, or play actions.</li><li>End your turn with 7 cards or fewer. After your 3rd play it ends automatically.</li></ol>
   <h3>Paying</h3><p>Pay from your bank, buildings or properties on the table — never from your hand. No change is given. If you can't cover it, you pay everything you have. The rainbow wild has no cash value.</p>
   <h3>Stealing (tap the table)</h3><ul><li><b>Sly Deal</b> — tap one opponent property that isn't in a full set.</li><li><b>Forced Deal</b> — tap their card (not from a full set) and any one of yours — even from a full set — to swap.</li><li><b>Deal Breaker</b> — tap an opponent's complete set; buildings come with it.</li></ul>
   <h3>Just Say No</h3><p>When an action targets you, you're offered your Just Say No. The attacker can counter with their own, you can counter back, and so on. It never uses one of your 3 plays. Against Birthday or a two-colour Rent it only protects you.</p>

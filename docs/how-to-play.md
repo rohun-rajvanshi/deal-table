@@ -17,7 +17,7 @@ Each player is dealt 5 cards.
 
 1. **Draw 2 cards.** This happens automatically. If your hand is empty you draw 5.
 2. **Play up to 3 cards.** Tap a card in your hand, then choose what to do with it in the action bar. The three dots next to the player's name show how many plays are left.
-3. **End your turn.** Tap **End turn**. If you have more than 7 cards you'll be asked to discard down to 7.
+3. **End your turn.** Tap **End turn** to stop early. After your 3rd play the turn ends by itself a moment later. If you have more than 7 cards you'll be asked to discard down to 7 first.
 
 Moving or flipping a **wild property** that's already on your table is free. Tap it and pick a colour, as often as you like during your turn.
 

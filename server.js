@@ -24,7 +24,10 @@ const routes = {
 
 const PUBLIC = path.join(ROOT, 'public');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webp': 'image/webp' };
+  '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webp': 'image/webp', '.md': 'text/markdown; charset=utf-8' };
+// Pages, the service worker and the manifest must revalidate so installed apps pick up new versions.
+const NO_CACHE = new Set(['.html', '.webmanifest']);
 
 async function migrate() {
   await pool.query('CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())');
@@ -78,7 +81,7 @@ function serveStatic(urlPath, res) {
       return fs.createReadStream(index).pipe(res);
     }
     const ext = path.extname(file).toLowerCase();
-    res.writeHead(200, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600' });
+    res.writeHead(200, { 'Content-Type': TYPES[ext] || 'application/octet-stream', 'Cache-Control': NO_CACHE.has(ext) || path.basename(file) === 'sw.js' ? 'no-cache' : 'public, max-age=3600' });
     fs.createReadStream(file).pipe(res);
   });
 }
