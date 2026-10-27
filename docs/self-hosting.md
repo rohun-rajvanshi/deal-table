@@ -6,73 +6,63 @@
 
 | Variable | Required | Meaning |
 | --- | --- | --- |
-| `DATABASE_URL` | For online play | PostgreSQL connection string, e.g. `postgres://user:pass@host:5432/dealtable` |
+| `DATABASE_URL` | No | PostgreSQL connection string, e.g. `postgres://user:pass@host:5432/dealtable` |
+| `PGHOST`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `PGPORT` | No | The same thing as separate settings, instead of `DATABASE_URL` |
+| `DATA_DIR` | No | Where the built-in database keeps its files when no PostgreSQL server is set (default `./data`) |
 | `PORT` | No | Port to listen on (default 3000; most hosts set it for you) |
 | `PGSSL` | No | `disable` to turn off TLS to the database (local databases only) |
 | `PGPOOL_MAX` | No | Maximum database connections (default 10) |
 
 Put them in a `.env` file (copy `.env.example`) or set them in your host's settings.
 
-If `DATABASE_URL` is missing or wrong, the site still loads and same-device games work. Online rooms and chat show an error.
+**No database server needed.** If you don't set `DATABASE_URL` or `PGHOST`, the server uses a built-in PostgreSQL ([PGlite](https://pglite.dev)) that stores rooms and chat in `DATA_DIR`. That suits a single small server. Use a real PostgreSQL server if you run more than one copy of the app.
 
 ## Run locally
 
-**Docker** (starts its own PostgreSQL):
+**Node** (built-in database, nothing else to install):
+
+```bash
+npm install
+npm start               # http://localhost:3000
+```
+
+**Docker** with its own PostgreSQL server:
 
 ```bash
 docker compose up
 # open http://localhost:8080
 ```
 
-**Node** with your own PostgreSQL:
+## Azure (free)
+
+This runs the game, online rooms and chat on **Azure App Service, Free (F1) plan**, with the built-in database. It costs nothing: the F1 plan is always free, and when its daily limit (60 CPU minutes) is used up, Azure pauses the app until the next day instead of charging.
+
+Run these in **Azure Cloud Shell** (the `>_` icon at the top of the Azure portal, choose Bash). Pick an allowed region; Azure for Students subscriptions only allow some (find them under **Policy → Assignments**, or try `centralindia`).
 
 ```bash
-npm install
-cp .env.example .env    # set DATABASE_URL (and PGSSL=disable for a local database)
-npm start               # http://localhost:3000
+RG=deal-table-rg; L=centralindia; APP=deal-table-$RANDOM
+az group create -n $RG -l $L
+az appservice plan create -g $RG -n deal-table-plan -l $L --is-linux --sku F1
+az webapp create -g $RG -p deal-table-plan -n $APP --runtime "NODE:24-lts"
+az webapp config appsettings set -g $RG -n $APP --settings DATA_DIR=/home/data SCM_DO_BUILD_DURING_DEPLOYMENT=true
+az webapp deployment source config -g $RG -n $APP --branch main --manual-integration \
+  --repo-url https://github.com/<your-username>/deal-table
+echo "https://$APP.azurewebsites.net"
 ```
 
-## Azure
+- `/home` is the App Service's permanent storage, so rooms survive restarts and redeploys.
+- The first visit after a quiet spell takes a few seconds while the free app wakes up.
+- **After you push changes to GitHub**, redeploy with:
+  `az webapp deployment source sync -g deal-table-rg -n <your-app-name>`
+- **Pause:** `az webapp stop -g deal-table-rg -n <your-app-name>` (and `start` to resume). **Remove everything:** `az group delete -n deal-table-rg`.
 
-The simplest setup is **Azure App Service (Linux, Node 20)** plus **Azure Database for PostgreSQL – Flexible Server**. Run these from the project folder with the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli), replacing `<...>`:
+### Azure with a PostgreSQL server
 
-```bash
-az login
-az group create --name deal-table-rg --location centralindia
-
-# Database (smallest tier)
-az postgres flexible-server create \
-  --resource-group deal-table-rg --name <your-db-name> \
-  --admin-user dealadmin --admin-password '<a-strong-password>' \
-  --tier Burstable --sku-name Standard_B1ms --version 16 \
-  --public-access 0.0.0.0
-az postgres flexible-server db create \
-  --resource-group deal-table-rg --server-name <your-db-name> --database-name dealtable
-
-# Web app: zips this folder, installs packages and deploys
-az webapp up --resource-group deal-table-rg --name <your-app-name> \
-  --runtime "NODE:20-lts" --sku B1
-
-# Point the app at the database
-az webapp config appsettings set --resource-group deal-table-rg --name <your-app-name> \
-  --settings DATABASE_URL='postgres://dealadmin:<a-strong-password>@<your-db-name>.postgres.database.azure.com:5432/dealtable'
-```
-
-The site will be at `https://<your-app-name>.azurewebsites.net`.
-
-- `--public-access 0.0.0.0` lets Azure services, including your web app, reach the database.
-- URL-encode special characters in the password inside `DATABASE_URL`: `@` → `%40`, `#` → `%23`, `/` → `%2F`.
-- If the site doesn't start, open the app in the Azure Portal → **Log stream**. "Applied migration" lines mean the database connected.
-- Use **Linux** App Service. Windows App Service needs extra IIS setup.
-- Both resources cost money. Check current Azure pricing and delete the resource group when you're done testing: `az group delete --name deal-table-rg`.
-
-These commands are standard Azure CLI. If one complains, check it with `--help` or the [Azure PostgreSQL quickstart](https://learn.microsoft.com/azure/postgresql/flexible-server/quickstart-create-server).
-
-To use your own server with the GitHub Pages copy, put its address in `public/config.js` (see [deploy-github-pages.md](deploy-github-pages.md)).
+For more traffic, use a paid plan (e.g. `--sku B1`) and **Azure Database for PostgreSQL – Flexible Server**, then set `PGHOST`, `PGUSER`, `PGPASSWORD` and `PGDATABASE` on the web app. Both cost money; check current Azure pricing first.
 
 ## Other hosts
 
-Any host that runs Node and offers PostgreSQL works the same way: set `DATABASE_URL` and run `npm start`. Examples are Render, Railway, Fly.io, a VM, or the Docker image on Azure Container Apps.
+Any host that runs Node works the same way: run `npm start`, and set `DATABASE_URL` if you have a PostgreSQL server. Examples are Render, Railway, Fly.io, a VM, or the Docker image on Azure Container Apps.
 
 ## Hosting only the game
 

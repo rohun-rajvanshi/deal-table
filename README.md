@@ -48,7 +48,7 @@ You can also run the whole thing yourself, site and API together, with Node.js a
 | [How to play](docs/how-to-play.md) | Rules, cards and on-screen controls |
 | [Install as an app](docs/install-app.md) | Android, iPhone and desktop install, offline play, Play Store packaging |
 | [Deploy to GitHub Pages](docs/deploy-github-pages.md) | Publish this repo as a website |
-| [Self-host (Azure, Docker, any Node host)](docs/self-hosting.md) | Run the site and API on your own server |
+| [Self-host (Azure free, Docker, any Node host)](docs/self-hosting.md) | Run the site and API on your own server |
 | [Architecture](docs/architecture.md) | How the code, game state and online sync work |
 | [Developing](docs/developing.md) | Running locally and making changes |
 
@@ -58,11 +58,10 @@ You can also run the whole thing yourself, site and API together, with Node.js a
 docker compose up        # app + PostgreSQL, then open http://localhost:8080
 ```
 
-Or, without Docker, with Node.js 18+ and a PostgreSQL database:
+Or, without Docker, with Node.js 18+ (uses a built-in database; no PostgreSQL needed):
 
 ```bash
 npm install
-cp .env.example .env     # set DATABASE_URL
 npm start                # http://localhost:3000
 ```
 
@@ -73,7 +72,7 @@ index.html         Forwards GitHub Pages visitors to public/
 public/            The game (index.html, app.js, table.css, config.js) and app files (manifest, sw.js, icons)
 api/rooms.js       Online rooms: create, join, start, save moves, leave
 api/chat.js        Room chat
-lib/db.js          PostgreSQL connection
+lib/db.js          Database: PostgreSQL server, or the built-in one
 migrations/        Database tables (applied automatically on start)
 server.js          Small Node server for self-hosting
 docs/              Documentation and screenshots
